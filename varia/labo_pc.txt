@@ -1,0 +1,12 @@
+Voor het testen van jullie projecten op de labo computers, kunnen volgende gegevens wel eens van pas komen (herhaling van bij het project voor het vak Telecommunicatie Systemen):
+Paswoord voor de computers: mvkbj1n (te onthouden door: met veel kabels bouw je een netwerk)
+De 8 computers in de middenblok van de ruimte zijn telkens 2 per 2 met elkaar verbonden.
+Om te communiceren moet je het volgende commando op elk van de PC's uitvoeren: $sudo ifconfig eth0 X.X.X.X up 
+De X.X.X.X dien je dan te vervangen door het ip address dat je aan de machine wilt geven, bv. 10.0.0.1 en 10.0.0.2. Het is niet nodig om op meer dan twee computers te testen.
+Internet toegang op de labo computers is aan te vragen via volgende link: https://euterpe.mosaic.uantwerpen.be/laboaccess/
+Voor eclipse op te starten dien je het volgende commando uit te voeren: /home/student/java-latest-released/eclipse/eclipse .
+Voor het instellen van de Java omgeving in Eclipse:
+Window -> Preferences -> Java -> Installed JREs:
+Add -> Next (Standard VM aangeduid laten) -> Directory:
++ Other location -> Computer -> usr -> lib -> jvm -> default-java (folder aanduiden) -> ok -> Finish -> ok
+Veel succes!
