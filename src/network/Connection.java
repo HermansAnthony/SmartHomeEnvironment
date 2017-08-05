@@ -52,7 +52,7 @@ public class Connection {
 				T proxy = (T) SpecificRequestor.getClient(protocol, client);
 				if (protocol == ControllerProto.class) {
 					clientIPAddress = InetAddress.getLocalHost().getHostAddress();
-					if (!local && clientIPAddress.equals(""))
+					if (!local)
 						clientIPAddress = NetworkUtils.askIPAddress();
 					this.id = ((ControllerProto) proxy).register(clientIPAddress, this.clientPortNumber, clientType);
 					System.out.println("Client Connection ID: " + this.id);
