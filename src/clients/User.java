@@ -104,7 +104,7 @@ public class User extends Client {
 										  controllerConnection.getClientPortNumber(), 
 										  fridge.getPortNumber());
 		try {
-			fridgeProxy = fridgeConnection.connect(ClientProto.class, type);
+			fridgeProxy = fridgeConnection.connect(ClientProto.class, type, false);
 		} catch (IOException e) {
 			System.out.println("Cannot establish connection with the Fridge.");
 			return;

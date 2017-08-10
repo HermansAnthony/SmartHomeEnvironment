@@ -20,6 +20,7 @@ public class Light extends Client {
 		System.out.println("=========");
 		System.out.println("id");
 		System.out.println("state");
+		System.out.println("switch");
 		System.out.println("exit");
 		System.out.println("");
 	}
@@ -37,6 +38,9 @@ public class Light extends Client {
         		break;
         	case "state": 
         		state();
+        		break;
+        	case "switch":
+        		switchState();
         		break;
         	default:
 	        	System.out.println("Command not recognized. Type 'list' for more information.");
