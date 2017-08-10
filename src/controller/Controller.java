@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,15 +38,17 @@ import controller.clients.User;
 
 public class Controller implements ControllerProto {
 	private int currentId = -1;
-	private ConcurrentHashMap<Integer, Client> connectedClients = new ConcurrentHashMap<Integer, Client>();
+	private static ConcurrentHashMap<Integer, Client> connectedClients = new ConcurrentHashMap<Integer, Client>();
 	private static List<FullClientRecord> backupClients = new ArrayList<FullClientRecord>();
 	private static Thread cliThread = null;
 	private static Entry<String,Integer> prevControllerDetails = new AbstractMap.SimpleEntry<>("None", 0);
+	private static long serverTime;
 
 	public static void main (String[] args){
 		int portNumber = 6789;
-		System.out.print("Args:");
-		System.out.print(args.length);
+		serverTime = System.currentTimeMillis();
+		DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+		System.out.println("Controller time: " + formatter.format(new Date(serverTime)));
 		if (args.length >= 2) {
 			// Connect with the new controller.
 			String serverIPAddress = args[0];
@@ -149,18 +154,26 @@ public class Controller implements ControllerProto {
 	}
 	
 	@Override
-	public synchronized int register(CharSequence IPaddress, int portNumber, CharSequence type) throws AvroRemoteException {
+	public synchronized int register(CharSequence IPaddress, int portNumber, CharSequence type, Boolean newClient) throws AvroRemoteException {
 		currentId++;
 		print("Client connected: "+ IPaddress
 		+ "::" + portNumber + " (ID: "+ (currentId) + ") on thread " 
 		+ Thread.currentThread().getId());
 		Client connected_client = null;
 		FullClientRecord backup = null;
-		for (FullClientRecord record : backupClients) {
+		for (FullClientRecord record : backupClients) {			
 			if (IPaddress.toString().equals(record.getIPaddress().toString()) &&
 					 portNumber == record.getPortNumber()) {
-				backup = record;
-				break;
+				if (newClient) {
+					// if user/fridge has become the controller and a new fridge/user connects with the same 
+					// address and port number => don't restore the settings
+					System.out.println("Removing record");
+					backupClients.remove(record);
+				}
+				if (newClient == false){
+					backup = record;
+					break;
+				}
 			}
 		}
 		if (backup != null) 
@@ -443,6 +456,11 @@ public class Controller implements ControllerProto {
 	
 	public static void print(String message) {
 		System.out.print("\n" + message + "\n" + "Controller> ");
+	}
+
+	@Override
+	public long getServerTime(int id) throws AvroRemoteException {
+		return System.currentTimeMillis();
 	}
 
 }

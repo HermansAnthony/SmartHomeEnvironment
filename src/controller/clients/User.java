@@ -11,7 +11,7 @@ public class User extends Client {
 	
 	public User(CharSequence IPaddress, int portNumber) throws IOException {
 		super(IPaddress, portNumber);
-		this.proxy = this.connection.connect(ClientProto.class, "");
+		this.proxy = this.connection.connect(ClientProto.class, "", false);
 	}
 
 	public boolean isInHouse() {

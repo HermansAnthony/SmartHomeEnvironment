@@ -3,7 +3,7 @@
 
     "types": [
         {
-          "type": "record", 
+          "type": "record",
           "name": "BasicClientRecord",
           "fields" : [
             {"name": "id", "type": "int"},
@@ -11,9 +11,9 @@
             {"name": "portNumber", "type": "int"},
             {"name": "type", "type": "string"}
           ]
-        }, 
+        },
         {
-          "type": "record", 
+          "type": "record",
           "name": "FullClientRecord",
           "fields" : [
             {"name": "id", "type": "int"},
@@ -22,39 +22,39 @@
             {"name": "type", "type": "string"},
             {"name": "inHouse", "type": "boolean"},
             {"name": "previousLight", "type": "boolean"},
-            {"name": "temperatureArray", "type": {"type": "array", "items": "float"}}        
+            {"name": "temperatureArray", "type": {"type": "array", "items": "float"}}
           ]
         }
     ],
 
 	"messages": {
 		"register": {
-			"request": [{"name": "IPaddress", "type": "string"}, {"name": "portNumber", "type": "int"}, {"name": "type", "type": "string"}] ,
+			"request": [{"name": "IPaddress", "type": "string"}, {"name": "portNumber", "type": "int"}, {"name": "type", "type": "string"}, {"name": "newClient", "type": ["null", "boolean" ], "default": null}] ,
 			"response": "int"
         },
-        
+
         "ping": {
 			"request": [],
 			"response": "null",
             "one-way": true
         },
-        
+
         "requestBackup": {
 			"request": [] ,
 			"response": {"type": "array", "items": "FullClientRecord"}
-        }, 
-        
+        },
+
         "reestablishController": {
 			"request": [{"name": "IPaddress", "type": "string"}, {"name": "portNumber", "type": "int"}] ,
 			"response": "null",
             "one-way": true
-        }, 
+        },
 
         "userEnterExit": {
 			"request": [{"name": "id", "type": "int" }, {"name": "enter", "type": "boolean" }] ,
 			"response": "boolean"
         },
-        
+
         "openFridge": {
 			"request": [{"name": "id", "type": "int" }] ,
 			"response": "BasicClientRecord"
@@ -63,28 +63,28 @@
         "listClients": {
 			"request": [] ,
 			"response": {"type": "array", "items": "BasicClientRecord"}
-        },    
+        },
 
         "getLightStates": {
 			"request": [] ,
 			"response": {"type": "map", "values": "boolean"}
-        },    
+        },
 
         "switchLight": {
 			"request": [{"name": "id", "type": "int" }] ,
 			"response": "boolean"
-        },    
- 
+        },
+
         "getFridgeInventory": {
 			"request": [{"name": "fridgeId", "type": "int"}] ,
 			"response": {"type": "array", "items": "string"}
-        },  
-        
+        },
+
         "announceEmpty": {
 			"request": [{"name": "fridgeId", "type": "int"}] ,
 			"response": "null",
 			"one-way": true
-        },  
+        },
 
         "addTemperature":{
         	"request": [{"name": "id", "type" : "int" }, {"name" : "randomValue", "type" : "float" }] ,
@@ -95,12 +95,18 @@
         "getTemperatureHouse": {
 			"request": [] ,
 			"response": "float"
-        },   
+        },
 
         "getTemperatureHistory": {
 			"request": [] ,
 			"response": {"type": "array", "items": "float"}
-        }
+        },
+
+				"getServerTime": {
+				"request": [{"name": "id", "type": "int"}] ,
+				"response": "long"
+				}
+
 
 	}
 }

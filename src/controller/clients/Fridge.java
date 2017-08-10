@@ -11,7 +11,7 @@ public class Fridge extends Client{
 	
 	public Fridge(CharSequence IPaddress, int portNumber) throws IOException{
 		super(IPaddress, portNumber);
-		this.proxy = this.connection.connect(ClientProto.class, "");
+		this.proxy = this.connection.connect(ClientProto.class, "", false);
 	}
 	
 	public List<CharSequence> getInventory() throws AvroRemoteException{

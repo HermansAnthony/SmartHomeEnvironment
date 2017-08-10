@@ -41,20 +41,22 @@ public class Connection {
 		this.serverIPAddress = serverIPAddress;
 	}
 	
-	public <T> T connect(Class<T> protocol, String clientType) throws IOException {
+	public <T> T connect(Class<T> protocol, String clientType, Boolean newClient) throws IOException {
 		int retries = 0;
 		while (retries < maxConnectionRetries) {
+			System.out.println("Connecting @Connection.java");
 			try {
+				System.out.println("Connecting to " + InetAddress.getByName(serverIPAddress) + " with port " + this.serverPortNumber);
 				// Connect to the controller.
-				InetSocketAddress serverSocketAddress = new InetSocketAddress(InetAddress.getByName(serverIPAddress), this.serverPortNumber);
+				InetSocketAddress serverSocketAddress = new InetSocketAddress(InetAddress.getByName(this.serverIPAddress), this.serverPortNumber);
 				client = new SaslSocketTransceiver(serverSocketAddress);
 				
 				T proxy = (T) SpecificRequestor.getClient(protocol, client);
 				if (protocol == ControllerProto.class) {
-					clientIPAddress = InetAddress.getLocalHost().getHostAddress();
-					if (!local)
+					// clientIPAddress = InetAddress.getLocalHost().getHostAddress();
+					if (!local && clientIPAddress.equals(""))
 						clientIPAddress = NetworkUtils.askIPAddress();
-					this.id = ((ControllerProto) proxy).register(clientIPAddress, this.clientPortNumber, clientType);
+					this.id = ((ControllerProto) proxy).register(clientIPAddress, this.clientPortNumber, clientType, newClient);
 					System.out.println("Client Connection ID: " + this.id);
 				}
 				return proxy;
