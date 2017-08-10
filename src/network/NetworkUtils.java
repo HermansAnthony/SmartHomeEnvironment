@@ -62,7 +62,7 @@ public class NetworkUtils {
             if (input >= 0 && input < netInts.size()) {
             	NetworkInterface netint = netInts.get(input);
             	System.out.println("Please choose the InetAddress index you want to use");
-                System.out.print("ChooseIPAddress> ");
+                System.out.print("ChooseInetAddress> ");
                 List<InetAddress> inetList = Collections.list(netint.getInetAddresses());
                 int inetAddressIndex = Integer.parseInt(scanner.nextLine());
                 if (inetAddressIndex >= 0 && inetAddressIndex < inetList.size()) {
