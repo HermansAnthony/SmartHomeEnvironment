@@ -133,7 +133,6 @@ public class Controller implements ControllerProto {
 				try { br.close(); } catch (IOException ignore) {}
 				return;
         	} catch (IOException e) { 
-        		// TODO check this
         		try { br.close(); } catch (IOException ignore) {}
         		return;
 			}	        
@@ -154,7 +153,7 @@ public class Controller implements ControllerProto {
 	}
 	
 	@Override
-	public synchronized int register(CharSequence IPaddress, int portNumber, CharSequence type, Boolean newClient) throws AvroRemoteException {
+	public synchronized int register(CharSequence IPaddress, int portNumber, CharSequence type) throws AvroRemoteException {
 		currentId++;
 		print("Client connected: "+ IPaddress
 		+ "::" + portNumber + " (ID: "+ (currentId) + ") on thread " 
@@ -164,16 +163,8 @@ public class Controller implements ControllerProto {
 		for (FullClientRecord record : backupClients) {			
 			if (IPaddress.toString().equals(record.getIPaddress().toString()) &&
 					 portNumber == record.getPortNumber()) {
-				if (newClient) {
-					// if user/fridge has become the controller and a new fridge/user connects with the same 
-					// address and port number => don't restore the settings
-					System.out.println("Removing record");
-					backupClients.remove(record);
-				}
-				if (newClient == false){
 					backup = record;
 					break;
-				}
 			}
 		}
 		if (backup != null) 

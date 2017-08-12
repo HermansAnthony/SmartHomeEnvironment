@@ -44,6 +44,7 @@ public class Client implements ClientProto {
 	
 	// Settings
 	private int backupSeconds = 2; // Amount of seconds before requesting a new backup.
+	private int maxControllerWait = 60;
 	
 	public Client() {
 		// Make sure the input stream cannot be closed.
@@ -71,7 +72,7 @@ public class Client implements ClientProto {
 			// Connect to the Controller.
 			controllerConnection = new Connection(controllerDetails.getKey(), portNumber, controllerDetails.getValue());
 			try {
-				proxy = controllerConnection.connect(ControllerProto.class, type, true);
+				proxy = controllerConnection.connect(ControllerProto.class, type);
 			} catch (IOException e) {
 				System.out.println(type + "> Cannot establish connection with the controller!");
 				clientServer.close();
@@ -97,12 +98,18 @@ public class Client implements ClientProto {
 				try {
 					if (!cliThread.isAlive())
 						break;
+//					if (this instanceof TemperatureSensor){
+//						if (!((TemperatureSensor)this).isAlive())
+//							break;
+//					}
+					System.out.println("Pinging");
 					if (counter % backupSeconds == 0)
 						connectedClientsBackup = proxy.requestBackup();
 					proxy.ping();
 					counter++;
 				} catch (AvroRemoteException | UndeclaredThrowableException e) {
 					// Controller is not responding.
+					System.out.println("Controller not responding");
 					if (!electionIsRunning) {
 						counter = 0;
 						electionIsRunning = true;
@@ -110,10 +117,15 @@ public class Client implements ClientProto {
 						if ( controllerCandidateTypes.contains(type) )
 							startElection();
 					}
+					if (electionIsRunning) {
+						counter++;
+						if (counter > maxControllerWait) 
+							cliThread.interrupt();
+					}
 				}
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
-			
+			System.out.println("Closing the connection");
 			clientServer.close();
 			controllerConnection.disconnect();
 			try { 
@@ -124,6 +136,14 @@ public class Client implements ClientProto {
 				}
 				} catch (InterruptedException e) {}
 			if (elected) {
+				// If there is an old record left with the same id => delete it to prevent wrong situations
+				int index = 0;
+				for (FullClientRecord record : connectedClientsBackup){
+					if (record.getId() == controllerConnection.getId()){
+						connectedClientsBackup.remove(index);
+					}
+					index++;
+				}
 				elected = false;
 				Controller controller = new Controller();
 				controller.setBackup(connectedClientsBackup);
@@ -158,26 +178,27 @@ public class Client implements ClientProto {
 	        	handleInput(input);
 			} catch(AvroRemoteException e) {
 //				if (!electionIsRunning) {
-//					electionIsRunning = true;
-//					controllerConnection.disconnect();
-//					if ( controllerCandidateTypes.contains(type) )
-//						startElection();
+//				electionIsRunning = true;
+//				controllerConnection.disconnect();
+//				if ( controllerCandidateTypes.contains(type) )
+//					startElection();
+//			}
+//			while (electionIsRunning) {
+//				try { 
+//					synchronized(cliThread) { cliThread.wait(); } 
+//				} catch (InterruptedException e1) {		
+//					try { br.close(); } catch (IOException ignore) {}
 //				}
-//				while (electionIsRunning) {
-//					try { 
-//						synchronized(cliThread) { cliThread.wait(); } 
-//					} catch (InterruptedException e1) {		
-//						try { br.close(); } catch (IOException ignore) {}
-//					}
+//			}
+//			if (!elected)
+//				try {
+//					handleInput(input); 
+//				} catch(AvroRemoteException ignore) {
+//				} catch (InterruptedException e1) {		
+//					try { br.close(); } catch (IOException ignore) {}
 //				}
-//				if (!elected)
-//					try {
-//						handleInput(input); 
-//					} catch(AvroRemoteException ignore) {
-//					} catch (InterruptedException e1) {		
-//						try { br.close(); } catch (IOException ignore) {}
-//					}
-			} catch (InterruptedException e1) {		
+			} 
+	        catch (InterruptedException e1) {		
 				try { br.close(); } catch (IOException ignore) {}
 			}
 	        input = "";
@@ -202,24 +223,23 @@ public class Client implements ClientProto {
 		Integer amountOfPossibleControllers = 0;
 		Integer id = controllerConnection.getId();
 		for (FullClientRecord client : connectedClientsBackup) {
-			System.out.println("Current client type: " + client.getType().toString());
-			if (controllerCandidateTypes.contains( client.getType().toString()))
+			System.out.println("Current client type in connectClientsBackup: " + client.getType().toString());
+			if (controllerCandidateTypes.contains( client.getType().toString())){
 				try{
 					String ownIPAddress = controllerConnection.getClientIPAddress();
 					Connection tempConnection = new Connection(client.getIPaddress().toString(), 
 														  controllerConnection.getClientPortNumber(), 
 														  client.getPortNumber());
-					System.out.println("Test1");
 					tempConnection.setId(id);
-					System.out.println("Test2");
 					tempConnection.setClientIPAddress(ownIPAddress);
-					System.out.println("Test3");
-					tempConnection.connect(ClientProto.class, "", false);
+					tempConnection.connect(ClientProto.class, "");
+					System.out.println("Client is still online");
 				} catch (IOException e) {
 					System.out.println("Client is not online, so don't add it to the possible controller list");
 					continue; // Do not add offline clients to the possible controller list
 				}
 				possibleControllers.add(client);
+			}
 		}
 		amountOfPossibleControllers = possibleControllers.size();
 		System.out.println("The amount of possible controllers are: " + amountOfPossibleControllers);
@@ -258,17 +278,16 @@ public class Client implements ClientProto {
 			System.out.println("Test2");
 			controllerConnection.setClientIPAddress(ownIPAddress);
 			System.out.println("Test3");
-			ringProxy = controllerConnection.connect(ClientProto.class, "", false);
+			ringProxy = controllerConnection.connect(ClientProto.class, "");
 			System.out.println("Test4");
 			ringProxy.settleConnection(); 
 			System.out.println("Test5");
 		    synchronized(ringProxy) { ringProxy.notifyAll(); }
 		} catch (IOException e) {
 			System.err.println("Could not connect to next Client after Controller failure");
-			System.err.println("Shutting down after check.");
+			System.err.println("Shutting down.");
 			System.exit(0);
 		}
-		System.out.println("Finished ring connection");
 		return true;
 	}
 
@@ -332,7 +351,7 @@ public class Client implements ClientProto {
 				controllerConnection.setClientIPAddress(ownIPAddress);
 				while (true) {
 					try {
-						proxy = controllerConnection.connect(ControllerProto.class, type, false);
+						proxy = controllerConnection.connect(ControllerProto.class, type);
 						break;
 					} catch (IOException e) {
 						// New controller is not yet online.
@@ -355,7 +374,7 @@ public class Client implements ClientProto {
 						Connection tempConnection = new Connection(next.getIPaddress().toString(), 
 							  								   	   controllerConnection.getClientPortNumber(), 
 							  								   	   next.getPortNumber());
-						ClientProto tempProxy = tempConnection.connect(ClientProto.class, "", false);
+						ClientProto tempProxy = tempConnection.connect(ClientProto.class, "");
 						tempProxy.settleConnection();
 						tempProxy.elected(i, IPAddress, portNumber);
 						tempConnection.disconnect();
@@ -379,7 +398,7 @@ public class Client implements ClientProto {
 		controllerConnection.setClientIPAddress(ownIPAddress);
 		while (true) {
 			try {
-				proxy = controllerConnection.connect(ControllerProto.class, type, false);
+				proxy = controllerConnection.connect(ControllerProto.class, type);
 				break;
 			} catch (IOException e) {
 				// New controller is not yet online.

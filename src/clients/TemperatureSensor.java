@@ -1,8 +1,10 @@
 package clients;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -36,7 +38,13 @@ public class TemperatureSensor extends Client {
 		internalClock = System.currentTimeMillis();
 	}
 	
+	// Necessary for clock thread
+	public boolean isAlive(){
+		return this.running;
+	}
+	
 	public void startClockThread(){
+		this.running = true;
 		clockThread = new Thread(new Runnable() {
 			@Override
 			public void run(){ timeStep();}
@@ -45,7 +53,7 @@ public class TemperatureSensor extends Client {
 	}
 	
 	public void endClockThread(){
-		running = false;
+		this.running = false;
 		try { clockThread.join(); } catch (InterruptedException e) {
 			System.out.println("Something went wrong with thread join");
 			e.printStackTrace();
@@ -53,7 +61,7 @@ public class TemperatureSensor extends Client {
 	}
 	
 	private void timeStep(){
-		while(true && running){
+		while(true && this.running){
 			internalClock = internalClock + 1000 + (long) driftValue;
 			try { Thread.sleep(1000); timeSinceLastTemperature+=1; } catch (InterruptedException e) {
 				System.err.println("Something went wrong with sleeping of the clock thread");
@@ -61,16 +69,12 @@ public class TemperatureSensor extends Client {
 			}
 			// After each timeBetweenMeasurements seconds => send a new temperature
 			if (timeSinceLastTemperature % timeBetweenMeasurements == 0)
-				try {
-					addTemperature();
-				} catch (AvroRemoteException e) {
+				try { addTemperature();} 
+				catch (AvroRemoteException | EOFException | UndeclaredThrowableException e) {
 					System.err.println("Connection was disconnected");
+					this.running = false;
 				}
 		}
-		if (running == false)
-			running = true;
-		return;
-		
 		// TODO maybe sync time in separate thread
 		//clockSync();
 	}
@@ -126,7 +130,7 @@ public class TemperatureSensor extends Client {
 	    try { br.close(); } catch (IOException e) {}
 	}
 	
-	public void addTemperature() throws AvroRemoteException {
+	public void addTemperature() throws AvroRemoteException, EOFException, UndeclaredThrowableException {
 		temperature = temperature - ( 1 - (2 * generator.nextFloat()) );
 		proxy.addTemperature(controllerConnection.getId(), temperature);
 	}

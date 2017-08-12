@@ -12,7 +12,7 @@ public class Light extends Client {
 	
 	public Light(CharSequence IPaddress, int portNumber) throws IOException {
 		super(IPaddress, portNumber);
-		this.proxy = this.connection.connect(ClientProto.class, "", false);
+		this.proxy = this.connection.connect(ClientProto.class, "");
 	}
 	
 	public boolean getState() throws AvroRemoteException {

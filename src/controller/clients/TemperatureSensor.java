@@ -14,7 +14,7 @@ public class TemperatureSensor extends Client {
 	
 	public TemperatureSensor(CharSequence IPaddress, int portNumber) throws IOException {
 		super(IPaddress, portNumber);
-		this.proxy = this.connection.connect(ClientProto.class, "", false);
+		this.proxy = this.connection.connect(ClientProto.class, "");
 	}
 	
 	public double getTemperature() throws AvroRemoteException {

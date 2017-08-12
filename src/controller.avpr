@@ -29,7 +29,7 @@
 
 	"messages": {
 		"register": {
-			"request": [{"name": "IPaddress", "type": "string"}, {"name": "portNumber", "type": "int"}, {"name": "type", "type": "string"}, {"name": "newClient", "type": ["null", "boolean" ], "default": null}] ,
+			"request": [{"name": "IPaddress", "type": "string"}, {"name": "portNumber", "type": "int"}, {"name": "type", "type": "string"}] ,
 			"response": "int"
         },
 
