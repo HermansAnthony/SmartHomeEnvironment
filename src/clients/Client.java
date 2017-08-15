@@ -112,11 +112,11 @@ public class Client implements ClientProto {
 						if ( controllerCandidateTypes.contains(type) )
 							startElection();
 					}
-					if (electionIsRunning) {
-						counter++;
-						if (counter > maxControllerWait) 
-							cliThread.interrupt();
-					}
+//					if (electionIsRunning) {
+//						counter++;
+//						if (counter > maxControllerWait) 
+//							cliThread.interrupt();
+//					}
 				}
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
@@ -302,7 +302,6 @@ public class Client implements ClientProto {
 		        catch (InterruptedException | IllegalMonitorStateException e) {}
 			}
 		}
-		System.out.println("Ring proxy succesfully initialized");
 		int ownId = controllerConnection.getId();
 		System.out.println("Election @client with id " + ownId);
 		if (id > ownId) {
@@ -323,7 +322,6 @@ public class Client implements ClientProto {
 			ringProxy.elected(ownId, controllerConnection.getClientIPAddress(), newControllerPortNumber);
 			// Reset election variables.
 			ringProxy = null;
-			System.out.println("Resetting the election variables");
 		}
 	}
 
@@ -426,8 +424,8 @@ public class Client implements ClientProto {
 	public void changeState(boolean state) {}
 	
 	@Override
-	public boolean isOpen() throws AvroRemoteException {
-		return false;
+	public int isOpen() throws AvroRemoteException {
+		return -100;
 	}
 
 	@Override
@@ -451,7 +449,7 @@ public class Client implements ClientProto {
 	public void switchState() {}
 
 	@Override
-	public boolean setFridgeStatus(boolean status) throws AvroRemoteException {
+	public boolean setFridgeUser(int status) throws AvroRemoteException {
 		return false;
 	}
 

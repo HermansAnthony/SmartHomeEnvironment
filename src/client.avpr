@@ -8,10 +8,10 @@
         },
         "isOpen": {
 			"request": [],
-			"response": "boolean"
+			"response": "int"
         },
-				"setFridgeStatus": {
-				"request": [{"name": "status", "type": "boolean"}],
+				"setFridgeUser": {
+				"request": [{"name": "id", "type": "int"}],
 				"response": "boolean"
 				},
       	"addFridgeItem": {

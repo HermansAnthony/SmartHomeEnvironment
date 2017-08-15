@@ -111,9 +111,9 @@ public class User extends Client {
 		}
 		fridgeConnectionRunning = true;
 		try {
-			fridgeProxy.setFridgeStatus(true);
+			fridgeProxy.setFridgeUser(controllerConnection.getId());
 		} catch (AvroRemoteException e){
-			System.out.println("Variable isCurrentlyUsed is not set");
+			System.out.println("Variable fridge User is not set");
 		}
 		
 		BufferedReader br = null;
@@ -129,7 +129,7 @@ public class User extends Client {
 		    		try { 
 			    		// Clean up.
 		    			br.close();
-		    			fridgeProxy.setFridgeStatus(false);
+		    			fridgeProxy.setFridgeUser(-100);
 			    		fridgeConnection.disconnect();
 			    		fridgeConnection = null;
 			    		fridgeConnectionRunning = false;
@@ -171,7 +171,7 @@ public class User extends Client {
 		    }
 		    // Clean up.
 			try { br.close(); } catch (IOException e) {}
-			fridgeProxy.setFridgeStatus(false);
+			fridgeProxy.setFridgeUser(-100);
 			fridgeConnection.disconnect();
 			fridgeConnection = null;
 			fridgeConnectionRunning = false;

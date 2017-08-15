@@ -21,6 +21,7 @@ import network.avro.SaslSocketServer;
 import network.avro.SaslSocketTransceiver;
 
 import org.apache.avro.AvroRemoteException;
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.Transceiver;
 import org.apache.avro.ipc.specific.SpecificRequestor;
@@ -420,8 +421,13 @@ public class Controller implements ControllerProto {
 		Client client = connectedClients.get(id);
 		if (client == null || !(client instanceof Fridge))
 			return new BasicClientRecord(-1, "", 0, "");
-		if (((Fridge) client).isOpen() )
-			return new BasicClientRecord(-2, "", 0, "");
+		if (((Fridge) client).isOpen() != -100){
+			int userId = ((Fridge) client).isOpen();
+			boolean userOnline = false;
+			try { userOnline = connectedClients.get(userId).isConnected();} 
+			catch (NullPointerException | AvroRuntimeException e) { userOnline = false; }
+			if (userOnline) return new BasicClientRecord(-2, "", 0, "");
+		}
 		return new BasicClientRecord(id, client.getIPAddress(), client.getPortNumber(), 
 									 client.getClass().getName());
 	}

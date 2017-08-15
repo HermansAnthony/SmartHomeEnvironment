@@ -12,12 +12,12 @@ import org.apache.avro.AvroRemoteException;
 
 public class Fridge extends Client {
 	private static Set<String> inventory = new HashSet<String>();
-	private boolean isCurrentlyUsed;
+	private int currentUserId;
 	
 	public Fridge() { 
 		super();
 		type = "Fridge"; 
-		isCurrentlyUsed = false;
+		currentUserId = -100;
 	}
 			
 	private void list() {
@@ -75,14 +75,14 @@ public class Fridge extends Client {
 	}
 	
 	@Override 
-	public boolean setFridgeStatus(boolean status) throws AvroRemoteException {
-		this.isCurrentlyUsed = status;
-		return this.isCurrentlyUsed;
+	public boolean setFridgeUser(int userId) throws AvroRemoteException {
+		this.currentUserId = userId;
+		return true;
 	}
 	
 	@Override
-	public boolean isOpen() throws AvroRemoteException {
-		return this.isCurrentlyUsed;
+	public int isOpen() throws AvroRemoteException {
+		return this.currentUserId;
 	}
 
 	@Override
