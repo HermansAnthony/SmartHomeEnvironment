@@ -12,10 +12,12 @@ import org.apache.avro.AvroRemoteException;
 
 public class Fridge extends Client {
 	private static Set<String> inventory = new HashSet<String>();
+	private boolean isCurrentlyUsed;
 	
 	public Fridge() { 
 		super();
 		type = "Fridge"; 
+		isCurrentlyUsed = false;
 	}
 			
 	private void list() {
@@ -23,7 +25,6 @@ public class Fridge extends Client {
 		System.out.println("=========");
 		System.out.println("id");
 		System.out.println("inventory");
-		System.out.println("add [item]");
 		System.out.println("exit");
 		System.out.println("");
 	}
@@ -31,16 +32,6 @@ public class Fridge extends Client {
 	private void inventory(){
         for(CharSequence item : inventory) 
             System.out.println(item);
-	}
-	
-	private void addItem(String newItem) {
-		inventory.add(newItem);
-	}
-	
-	private void removeItem(CharSequence newItem) throws AvroRemoteException {
-		inventory.remove(newItem);
-		if (inventory.isEmpty())
-			proxy.announceEmpty(controllerConnection.getId());
 	}
 
 	protected void handleInput(String input) throws AvroRemoteException {
@@ -51,22 +42,6 @@ public class Fridge extends Client {
         		break;
         	case "inventory": 
         		inventory();
-        		break;
-        	case "add":
-        		if (command.length > 1) {
-        			addItem(command[1]);
-        		}
-        		else {
-            		System.out.println("Please specify an item.");
-        		}
-        		break;
-        	case "remove":
-        		if (command.length > 1) {
-        			removeItem(command[1]);
-        		}
-        		else {
-            		System.out.println("Please specify an item.");
-        		}
         		break;
         	default:
 	        	System.out.println("Command not recognized. Type 'list' for more information.");
@@ -97,6 +72,17 @@ public class Fridge extends Client {
 	@Override
 	public boolean addFridgeItem(CharSequence item) throws AvroRemoteException {
 		return inventory.add(item.toString());
+	}
+	
+	@Override 
+	public boolean setFridgeStatus(boolean status) throws AvroRemoteException {
+		this.isCurrentlyUsed = status;
+		return this.isCurrentlyUsed;
+	}
+	
+	@Override
+	public boolean isOpen() throws AvroRemoteException {
+		return this.isCurrentlyUsed;
 	}
 
 	@Override

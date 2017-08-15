@@ -10,6 +10,10 @@
 			"request": [],
 			"response": "boolean"
         },
+				"setFridgeStatus": {
+				"request": [{"name": "status", "type": "boolean"}],
+				"response": "boolean"
+				},
       	"addFridgeItem": {
 			"request": [{"name": "item", "type": "string"}],
 			"response": "boolean"

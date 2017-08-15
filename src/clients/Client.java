@@ -44,7 +44,7 @@ public class Client implements ClientProto {
 	
 	// Settings
 	private int backupSeconds = 2; // Amount of seconds before requesting a new backup.
-	private int maxControllerWait = 60;
+	private int maxControllerWait = 600; // After 600 seconds of no controller => exit the client
 	
 	public Client() {
 		// Make sure the input stream cannot be closed.
@@ -98,11 +98,6 @@ public class Client implements ClientProto {
 				try {
 					if (!cliThread.isAlive())
 						break;
-//					if (this instanceof TemperatureSensor){
-//						if (!((TemperatureSensor)this).isAlive())
-//							break;
-//					}
-					System.out.println("Pinging");
 					if (counter % backupSeconds == 0)
 						connectedClientsBackup = proxy.requestBackup();
 					proxy.ping();
@@ -125,7 +120,7 @@ public class Client implements ClientProto {
 				}
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
-			System.out.println("Closing the connection");
+
 			clientServer.close();
 			controllerConnection.disconnect();
 			try { 
@@ -454,5 +449,10 @@ public class Client implements ClientProto {
 
 	@Override
 	public void switchState() {}
+
+	@Override
+	public boolean setFridgeStatus(boolean status) throws AvroRemoteException {
+		return false;
+	}
 
 }

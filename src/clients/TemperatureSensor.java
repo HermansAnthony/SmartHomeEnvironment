@@ -38,11 +38,6 @@ public class TemperatureSensor extends Client {
 		internalClock = System.currentTimeMillis();
 	}
 	
-	// Necessary for clock thread
-	public boolean isAlive(){
-		return this.running;
-	}
-	
 	public void startClockThread(){
 		this.running = true;
 		clockThread = new Thread(new Runnable() {
