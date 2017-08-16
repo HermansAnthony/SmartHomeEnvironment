@@ -456,7 +456,7 @@ public class Controller implements ControllerProto {
 	}
 
 	@Override
-	public long getServerTime(int id) throws AvroRemoteException {
+	public long getServerTime() throws AvroRemoteException {
 		return System.currentTimeMillis();
 	}
 

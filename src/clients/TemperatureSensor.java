@@ -21,12 +21,9 @@ public class TemperatureSensor extends Client {
 	private Random generator;
 	private Thread clockThread = null;
 	private long internalClock;
-	Boolean running;
+	private boolean running;
 	private int timeBetweenMeasurements = 5;
-	private long timeSinceLastTemperature;	// Contains a counter when the last temperature was sent (in seconds)
-	private long Tr; 						// Time the request was sent
-	private long Ta;						// Time the response was received
-	
+	private int updateTime = 5;
 	private DateFormat formatter; 			// Formatter to print the time a readable format
 	
 	public TemperatureSensor() { 
@@ -34,7 +31,6 @@ public class TemperatureSensor extends Client {
 		initialize();
 		type = "TemperatureSensor"; 
 		formatter =  new SimpleDateFormat("HH:mm:ss:SSS");
-		running = true;
 		internalClock = System.currentTimeMillis();
 	}
 	
@@ -48,48 +44,45 @@ public class TemperatureSensor extends Client {
 	}
 	
 	public void endClockThread(){
+		System.out.println("Ending clock thread");
 		this.running = false;
 		try { clockThread.join(); } catch (InterruptedException e) {
-			System.out.println("Something went wrong with thread join");
-			e.printStackTrace();
+			System.out.println("Something went wrong with joining thread @Temperaturesensor");
 		}
 	}
 	
 	private void timeStep(){
-		while(true && this.running){
+		int counter = 0;
+		while(this.running){
+//			System.out.println("Running: " + this.running + " Counter: "+ counter);
 			internalClock = internalClock + 1000 + (long) driftValue;
-			try { Thread.sleep(1000); timeSinceLastTemperature+=1; } catch (InterruptedException e) {
+			try { Thread.sleep(1000); counter+=1; } catch (InterruptedException e) {
 				System.err.println("Something went wrong with sleeping of the clock thread");
-				e.printStackTrace();
 			}
 			// After each timeBetweenMeasurements seconds => send a new temperature
-			if (timeSinceLastTemperature % timeBetweenMeasurements == 0)
+			if (counter % timeBetweenMeasurements == 0) {
+				System.out.println("Current time:" + formatter.format(new Date(internalClock)));
 				try { addTemperature();} 
 				catch (AvroRemoteException | EOFException | UndeclaredThrowableException e) {
-					System.err.println("Connection was disconnected");
-					this.running = false;
+					System.err.println("Connection was disconnected, waiting to reconnect");
 				}
+			}
+			//After each updateTime seconds => sync the clock (Cristian's algorythm)
+			if (counter % updateTime == 0){
+				this.clockSync();
+			}
 		}
-		// TODO maybe sync time in separate thread
-		//clockSync();
 	}
 	
 	public void clockSync(){
-		System.out.println("Clock sync");
 		try {
-			Tr = System.currentTimeMillis();
-			long serverTime = proxy.getServerTime(controllerConnection.getId());
-			Ta = System.currentTimeMillis();
+			long Tr = System.currentTimeMillis(); 	// Time the request was sent
+			long serverTime = proxy.getServerTime();
+			long Ta = System.currentTimeMillis();	// Time the reply was received
 			long drifted = internalClock;
 			internalClock = serverTime + (Ta-Tr)/2;
-//			System.out.println("Tr: " + formatter.format(new Date(Tr)));
-			System.out.println("Server time: "+ formatter.format(new Date(serverTime)));
-//			System.out.println("Ta: " + formatter.format(new Date(Ta)));
-			System.out.println("Before: " + formatter.format(new Date(drifted)) + " After: "+ formatter.format(new Date(internalClock)));
-		} catch (AvroRemoteException e) {
-			System.err.println("Something went wrong when fetching time from the server");
-			e.printStackTrace();
-		}
+			System.out.println("Before sync: " + formatter.format(new Date(drifted)) + " After sync: "+ formatter.format(new Date(internalClock)));
+		} catch (AvroRemoteException e) {}
 	}
 	
 	// Set the initial temperature and drift value	
@@ -134,11 +127,16 @@ public class TemperatureSensor extends Client {
 		System.out.println(temperature + " degres celsius");
 	}
 	
+	private void changeUpdateTime(int newUpdateInterval){
+		this.updateTime = newUpdateInterval;
+	}
+	
 	private void list() {
-		System.out.println("id");
 		System.out.println("Commands:");
 		System.out.println("=========");
+		System.out.println("id");
 		System.out.println("temperature");
+		System.out.println("changeUT [newInterval]");
 		System.out.println("exit");
 		System.out.println("");
 	}
@@ -151,6 +149,16 @@ public class TemperatureSensor extends Client {
         		break;
         	case "temperature": 
         		getTemperature();
+        		break;
+        	case "changeUT":
+        		if (command.length > 1){
+        			try { 
+        				int newUpdateInterval = Integer.parseInt(command[1]); 
+        				changeUpdateTime(newUpdateInterval);
+        			} catch (NumberFormatException e) { 
+        	        	System.out.println("The specified update interval is not convertable to integer");
+        			}
+        		}
         		break;
         	default:
 	        	System.out.println("Command not recognized. Type 'list' for more information.");

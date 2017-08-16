@@ -228,7 +228,7 @@ public class Client implements ClientProto {
 					tempConnection.setId(id);
 					tempConnection.setClientIPAddress(ownIPAddress);
 					tempConnection.connect(ClientProto.class, "");
-					System.out.println("Client is still online");
+					tempConnection.disconnect();
 				} catch (IOException e) {
 					System.out.println("Client is not online, so don't add it to the possible controller list");
 					continue; // Do not add offline clients to the possible controller list
@@ -247,7 +247,7 @@ public class Client implements ClientProto {
 			return false;
 		}
 		FullClientRecord nextClient = null;
-		Boolean currentClient = false;
+		boolean currentClient = false;
 		for (FullClientRecord iterator: possibleControllers){
 			if (currentClient == true){
 				nextClient = iterator;
@@ -261,22 +261,16 @@ public class Client implements ClientProto {
 		if (currentClient == true && nextClient == null){
 			nextClient = possibleControllers.get(0);
 		}
-		System.out.println("Next process:" + nextClient.getId() +" (Current proc:" + id + ")");
 		// Connect to next ID
 		try {
 			String ownIPAddress = controllerConnection.getClientIPAddress();
 			controllerConnection = new Connection(nextClient.getIPaddress().toString(), 
 												  controllerConnection.getClientPortNumber(), 
 												  nextClient.getPortNumber());
-			System.out.println("Test1");
 			controllerConnection.setId(id);
-			System.out.println("Test2");
 			controllerConnection.setClientIPAddress(ownIPAddress);
-			System.out.println("Test3");
 			ringProxy = controllerConnection.connect(ClientProto.class, "");
-			System.out.println("Test4");
 			ringProxy.settleConnection(); 
-			System.out.println("Test5");
 		    synchronized(ringProxy) { ringProxy.notifyAll(); }
 		} catch (IOException e) {
 			System.err.println("Could not connect to next Client after Controller failure");
@@ -289,7 +283,6 @@ public class Client implements ClientProto {
 	@Override
 	public void election(int i, int id) {
 		// Reduces the amount of running elections.
-		System.out.println("Election with i=" + i + " and id=" + id);
 		if (!electionIsRunning) {
 			electionIsRunning = true;
 			if (!connectRing())
@@ -303,7 +296,6 @@ public class Client implements ClientProto {
 			}
 		}
 		int ownId = controllerConnection.getId();
-		System.out.println("Election @client with id " + ownId);
 		if (id > ownId) {
 			// electionIsRunning = false;
 			ringProxy.election(i, id);
@@ -329,9 +321,7 @@ public class Client implements ClientProto {
 	// This method will be called when the Chang Roberts algorythm has succesfully found a new controller 	
 	public void elected(int i, CharSequence IPAddress, int portNumber) {
 		int ownId = controllerConnection.getId();
-		System.out.println("Elected method @client with id " + ownId);
 		if (i != ownId) {
-			System.out.println("Not elected client with id " + ownId);
 			if (electionIsRunning || !controllerCandidateTypes.contains(type)) {
 				if (ringProxy != null)
 					ringProxy.elected(i, IPAddress, portNumber);
@@ -358,7 +348,6 @@ public class Client implements ClientProto {
 			}
 		} else {
 			// Make sure all other clients know there is a new Controller.
-			System.out.println("Elected client with id " + ownId);
 			Iterator<FullClientRecord> itr = connectedClientsBackup.iterator();
 			while(itr.hasNext()) {
 				FullClientRecord next = itr.next();
@@ -374,7 +363,6 @@ public class Client implements ClientProto {
 					} catch (IOException | UndeclaredThrowableException e) {}
 				}
 			}
-			System.out.println("Elected with id "+ ownId);
 			electionIsRunning = false;
 			participantMap.clear();
 			cliThread.interrupt();
@@ -407,7 +395,6 @@ public class Client implements ClientProto {
 	@Override
 	public Void settleConnection() throws AvroRemoteException {
 		// Ensures one-way messages behave properly.
-		System.out.println("Settling connection");
 		return null;
 	}
 

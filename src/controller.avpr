@@ -103,7 +103,7 @@
         },
 
 				"getServerTime": {
-				"request": [{"name": "id", "type": "int"}] ,
+				"request": [] ,
 				"response": "long"
 				}
 
