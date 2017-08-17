@@ -44,13 +44,11 @@ public class Controller implements ControllerProto {
 	private static List<FullClientRecord> backupClients = new ArrayList<FullClientRecord>();
 	private static Thread cliThread = null;
 	private static Entry<String,Integer> prevControllerDetails = new AbstractMap.SimpleEntry<>("None", 0);
-	private static long serverTime;
-	private static DateFormat formatter;
+	private static long serverTime = 0;
+	private static DateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
 	public static void main (String[] args){
 		int portNumber = 6789;
-		Controller.serverTime = 0;
-		Controller.formatter = new SimpleDateFormat("HH:mm:ss");
 		Controller.formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		System.out.println("Controller time init: " + Controller.formatter.format(new Date(serverTime)));
 		if (args.length >= 2) {
@@ -114,10 +112,10 @@ public class Controller implements ControllerProto {
 		while(cliThread.isAlive()) 
 			try { 
 				Thread.sleep(1000); 
-				Controller.serverTime+=1000; 
+				Controller.serverTime = Controller.serverTime + 1000; 
 				if(Controller.serverTime % 5000 == 0) {
-					System.out.println("Controller time: " + Controller.formatter.format(new Date(Controller.serverTime)));
-					} 
+					System.out.println("Controller time: " + Controller.serverTime);
+				} 
 				} catch (InterruptedException e) {}
 		
 		// Stop pinging.
@@ -467,7 +465,7 @@ public class Controller implements ControllerProto {
 
 	@Override
 	public long getServerTime() throws AvroRemoteException {
-		return 0;
+		return Controller.serverTime;
 	}
 
 }

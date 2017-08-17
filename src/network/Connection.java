@@ -19,7 +19,6 @@ public class Connection {
 	
 	private String clientIPAddress = "";
 	private String serverIPAddress = "";
-	private boolean local = false;
 	private int clientPortNumber;
 	private int serverPortNumber;
 	private Transceiver client = null;
@@ -36,8 +35,6 @@ public class Connection {
 		} catch (UnknownHostException e) { e.printStackTrace(); } 
 		if (serverIPAddress.equals(""))
 			serverIPAddress = localAddress;
-		if (serverIPAddress == localAddress)
-			local = true;
 		this.serverIPAddress = serverIPAddress;
 	}
 	
@@ -52,8 +49,7 @@ public class Connection {
 				
 				T proxy = (T) SpecificRequestor.getClient(protocol, client);
 				if (protocol == ControllerProto.class) {
-					// clientIPAddress = InetAddress.getLocalHost().getHostAddress();
-					if (!local && clientIPAddress.equals(""))
+					if (clientIPAddress.equals(""))
 						clientIPAddress = NetworkUtils.askIPAddress();
 					this.id = ((ControllerProto) proxy).register(clientIPAddress, this.clientPortNumber, clientType);
 					System.out.println("Client Connection ID: " + this.id);
