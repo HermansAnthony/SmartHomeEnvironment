@@ -88,8 +88,7 @@
 
         "addTemperature":{
         	"request": [{"name": "id", "type" : "int" }, {"name" : "randomValue", "type" : "float" }] ,
-        	"response": "null",
-            "one-way": true
+        	"response": "null"
         },
 
         "getTemperatureHouse": {

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import network.NetworkUtils;
@@ -44,12 +45,14 @@ public class Controller implements ControllerProto {
 	private static Thread cliThread = null;
 	private static Entry<String,Integer> prevControllerDetails = new AbstractMap.SimpleEntry<>("None", 0);
 	private static long serverTime;
+	private static DateFormat formatter;
 
 	public static void main (String[] args){
 		int portNumber = 6789;
-		serverTime = System.currentTimeMillis();
-		DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
-		System.out.println("Controller time: " + formatter.format(new Date(serverTime)));
+		Controller.serverTime = 0;
+		Controller.formatter = new SimpleDateFormat("HH:mm:ss");
+		Controller.formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		System.out.println("Controller time init: " + Controller.formatter.format(new Date(serverTime)));
 		if (args.length >= 2) {
 			// Connect with the new controller.
 			String serverIPAddress = args[0];
@@ -109,7 +112,13 @@ public class Controller implements ControllerProto {
 		cliThread.start();
 		
 		while(cliThread.isAlive()) 
-			try { Thread.sleep(1000); } catch (InterruptedException e) {}
+			try { 
+				Thread.sleep(1000); 
+				Controller.serverTime+=1000; 
+				if(Controller.serverTime % 5000 == 0) {
+					System.out.println("Controller time: " + Controller.formatter.format(new Date(Controller.serverTime)));
+					} 
+				} catch (InterruptedException e) {}
 		
 		// Stop pinging.
     	pinger.setRunning(false);
@@ -409,9 +418,10 @@ public class Controller implements ControllerProto {
 	}
 
 	@Override
-	public void addTemperature(int id, float randomValue){
+	public Void addTemperature(int id, float randomValue){
 		if (connectedClients.get(id) instanceof TemperatureSensor)
 			((TemperatureSensor) connectedClients.get(id)).addTemperature(randomValue);
+		return null;
 	}
 
 	@Override
@@ -457,7 +467,7 @@ public class Controller implements ControllerProto {
 
 	@Override
 	public long getServerTime() throws AvroRemoteException {
-		return System.currentTimeMillis();
+		return 0;
 	}
 
 }

@@ -104,7 +104,6 @@ public class Client implements ClientProto {
 					counter++;
 				} catch (AvroRemoteException | UndeclaredThrowableException e) {
 					// Controller is not responding.
-					System.out.println("Controller not responding");
 					if (!electionIsRunning) {
 						counter = 0;
 						electionIsRunning = true;
@@ -171,28 +170,7 @@ public class Client implements ClientProto {
 	        }
 	        try {
 	        	handleInput(input);
-			} catch(AvroRemoteException e) {
-//				if (!electionIsRunning) {
-//				electionIsRunning = true;
-//				controllerConnection.disconnect();
-//				if ( controllerCandidateTypes.contains(type) )
-//					startElection();
-//			}
-//			while (electionIsRunning) {
-//				try { 
-//					synchronized(cliThread) { cliThread.wait(); } 
-//				} catch (InterruptedException e1) {		
-//					try { br.close(); } catch (IOException ignore) {}
-//				}
-//			}
-//			if (!elected)
-//				try {
-//					handleInput(input); 
-//				} catch(AvroRemoteException ignore) {
-//				} catch (InterruptedException e1) {		
-//					try { br.close(); } catch (IOException ignore) {}
-//				}
-			} 
+			} catch(AvroRemoteException e) {} 
 	        catch (InterruptedException e1) {		
 				try { br.close(); } catch (IOException ignore) {}
 			}

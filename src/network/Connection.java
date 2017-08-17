@@ -59,7 +59,7 @@ public class Connection {
 					System.out.println("Client Connection ID: " + this.id);
 				}
 				return proxy;
-			} catch (IOException e) {
+			} catch (IOException | NullPointerException e) {
 				// Could not connect to the server.
 				retries++;
 			}

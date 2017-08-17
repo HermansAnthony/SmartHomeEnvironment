@@ -11,6 +11,7 @@ import java.util.AbstractMap;
 import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.TimeZone;
 
 import org.apache.avro.AvroRemoteException;
 
@@ -20,18 +21,17 @@ public class TemperatureSensor extends Client {
 	private float driftValue = 0;
 	private Random generator;
 	private Thread clockThread = null;
-	private long internalClock;
+	private long internalClock = 0;
 	private boolean running;
 	private int timeBetweenMeasurements = 5;
 	private int updateTime = 5;
-	private DateFormat formatter; 			// Formatter to print the time a readable format
+	private DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS"); // Formatter to print the time a readable format
 	
 	public TemperatureSensor() { 
 		super();
 		initialize();
 		type = "TemperatureSensor"; 
-		formatter =  new SimpleDateFormat("HH:mm:ss:SSS");
-		internalClock = System.currentTimeMillis();
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	
 	public void startClockThread(){
@@ -64,12 +64,12 @@ public class TemperatureSensor extends Client {
 				System.out.println("Current time:" + formatter.format(new Date(internalClock)));
 				try { addTemperature();} 
 				catch (AvroRemoteException | EOFException | UndeclaredThrowableException e) {
-					System.err.println("Connection was disconnected, waiting to reconnect");
+					System.out.println("Controller offline, trying to reconnect");
 				}
 			}
-			//After each updateTime seconds => sync the clock (Cristian's algorythm)
+			//After each updateTime seconds => sync the clock (Cristian's algorithm)
 			if (counter % updateTime == 0){
-				this.clockSync();
+					this.clockSync();
 			}
 		}
 	}
