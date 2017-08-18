@@ -61,7 +61,7 @@ public class TemperatureSensor extends Client {
 			}
 			// After each timeBetweenMeasurements seconds => send a new temperature
 			if (counter % timeBetweenMeasurements == 0) {
-				System.out.println("Current time:" + formatter.format(new Date(internalClock)));
+				System.out.println("Current time: " + formatter.format(new Date(internalClock)));
 				try { addTemperature();} 
 				catch (AvroRemoteException | EOFException | UndeclaredThrowableException e) {
 					System.out.println("Controller offline, trying to reconnect");
@@ -82,7 +82,7 @@ public class TemperatureSensor extends Client {
 			long drifted = internalClock;
 			internalClock = serverTime + (Ta-Tr)/2;
 			System.out.println("Before sync: " + formatter.format(new Date(drifted)) + " After sync: "+ formatter.format(new Date(internalClock)));
-		} catch (AvroRemoteException e) {}
+		} catch (AvroRemoteException | UndeclaredThrowableException e) {}
 	}
 	
 	// Set the initial temperature and drift value	

@@ -49,8 +49,6 @@ public class Controller implements ControllerProto {
 
 	public static void main (String[] args){
 		int portNumber = 6789;
-		Controller.formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		System.out.println("Controller time init: " + Controller.formatter.format(new Date(serverTime)));
 		if (args.length >= 2) {
 			// Connect with the new controller.
 			String serverIPAddress = args[0];
@@ -83,6 +81,7 @@ public class Controller implements ControllerProto {
 	}
 	
 	public Entry<String,Integer> run(int startingPortNumber) {
+		Controller.formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		prevControllerDetails = new AbstractMap.SimpleEntry<>("None", 0);
 		int portNumber = NetworkUtils.getValidPortNumber(startingPortNumber);
 		Server server = null;
@@ -114,7 +113,7 @@ public class Controller implements ControllerProto {
 				Thread.sleep(1000); 
 				Controller.serverTime = Controller.serverTime + 1000; 
 				if(Controller.serverTime % 5000 == 0) {
-					System.out.println("Controller time: " + Controller.serverTime);
+					System.out.println("Controller time: " + Controller.formatter.format(new Date(Controller.serverTime)));
 				} 
 				} catch (InterruptedException e) {}
 		
@@ -394,7 +393,7 @@ public class Controller implements ControllerProto {
 			Client client = connectedClients.get(key);
 			if (client instanceof TemperatureSensor) {
 				List<Float> tempHistory = ((TemperatureSensor) client).getTemperatureHistory();
-				if (tempHistory.size() > maxSize)
+				if (tempHistory.size() < maxSize || maxSize == 0)
 					maxSize = tempHistory.size();
 				history.add(tempHistory);
 			}

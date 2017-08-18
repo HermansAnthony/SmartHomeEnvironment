@@ -199,16 +199,18 @@ public class Client implements ClientProto {
 			System.out.println("Current client type in connectClientsBackup: " + client.getType().toString());
 			if (controllerCandidateTypes.contains( client.getType().toString())){
 				try{
-					if (!(id == client.getId())){
-						String ownIPAddress = controllerConnection.getClientIPAddress();
-						Connection tempConnection = new Connection(client.getIPaddress().toString(), 
+					if (id == client.getId()){
+						possibleControllers.add(client);
+						continue;
+					}
+					String ownIPAddress = controllerConnection.getClientIPAddress();
+					Connection tempConnection = new Connection(client.getIPaddress().toString(), 
 															  controllerConnection.getClientPortNumber(), 
 															  client.getPortNumber());
-						tempConnection.setId(id);
-						tempConnection.setClientIPAddress(ownIPAddress);
-						tempConnection.connect(ClientProto.class, "");
-						tempConnection.disconnect();
-					}
+					tempConnection.setId(id);
+					tempConnection.setClientIPAddress(ownIPAddress);
+					tempConnection.connect(ClientProto.class, "");
+					tempConnection.disconnect();
 				} catch (IOException e) {
 					System.out.println("Client is not online, so don't add it to the possible controller list");
 					continue; // Do not add offline clients to the possible controller list
