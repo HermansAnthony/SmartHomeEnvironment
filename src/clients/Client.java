@@ -19,6 +19,7 @@ import network.avro.SaslSocketServer;
 import org.apache.avro.AvroRemoteException;
 import org.apache.avro.ipc.Server;
 import org.apache.avro.ipc.specific.SpecificResponder;
+import org.codehaus.jackson.type.JavaType;
 
 import controller.Controller;
 import proto.ClientProto;
@@ -211,7 +212,7 @@ public class Client implements ClientProto {
 					tempConnection.setClientIPAddress(ownIPAddress);
 					tempConnection.connect(ClientProto.class, "");
 					tempConnection.disconnect();
-				} catch (IOException e) {
+				} catch (IOException | NullPointerException e) {
 					System.out.println("Client is not online, so don't add it to the possible controller list");
 					continue; // Do not add offline clients to the possible controller list
 				}
