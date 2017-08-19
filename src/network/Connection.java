@@ -41,7 +41,6 @@ public class Connection {
 	public <T> T connect(Class<T> protocol, String clientType) throws IOException {
 		int retries = 0;
 		while (retries < maxConnectionRetries) {
-			System.out.println("Connecting @Connection.java");
 			try {
 				// Connect to the controller.
 				InetSocketAddress serverSocketAddress = new InetSocketAddress(InetAddress.getByName(this.serverIPAddress), this.serverPortNumber);
@@ -55,7 +54,7 @@ public class Connection {
 					System.out.println("Client Connection ID: " + this.id);
 				}
 				return proxy;
-			} catch (IOException | NullPointerException e) {
+			} catch (IOException e) {
 				// Could not connect to the server.
 				retries++;
 			}
@@ -69,7 +68,7 @@ public class Connection {
 					client.close();
 		} catch (IOException e) {
 			System.err.println("Error closing connection ...");
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 	
